@@ -9,6 +9,7 @@ from pyvi import ViTokenizer, ViPosTagger
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import hashlib
+import torch
 
 # Tải mô hình StarCoder
 checkpoint = "bigcode/starcoder"
