@@ -17,8 +17,8 @@ checkpoint = "bigcode/starcoder"
 device = "cuda" if torch.cuda.is_available() else "cpu"
 auth_token = os.getenv("MODEL_KEY")
 
-tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_auth_token=auth_token)
-model = AutoModelForCausalLM.from_pretrained(checkpoint, use_auth_token=auth_token).to(device)
+tokenizer = AutoTokenizer.from_pretrained(checkpoint, token=auth_token)
+model = AutoModelForCausalLM.from_pretrained(checkpoint, token=auth_token).to(device)
 
 
 # Tải mô hình ngôn ngữ spaCy
@@ -27,10 +27,20 @@ nlp = spacy.load("en_core_web_sm")
 # Kết nối Google Sheets
 def connect_google_sheet(sheet_name):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("/etc/secrets/credentials.json", scope)
+    
+    # Lấy thông tin credentials từ biến môi trường
+    creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    if creds_json is None:
+        raise ValueError("GOOGLE_CREDENTIALS_JSON environment variable is not set.")
+    
+    # Chuyển JSON từ chuỗi (string) thành dictionary
+    creds_dict = json.loads(creds_json)
+    
+    # Kết nối với Google Sheets
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     sheet = client.open(sheet_name).sheet1
-    return sheet
+    return sheetfitfit
 
 # Hàm hash mật khẩu
 def hash_password(password):
@@ -157,5 +167,4 @@ def api():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))  
-    print(f"Starting server on port {port}")  
     app.run(host='0.0.0.0', port=port)
