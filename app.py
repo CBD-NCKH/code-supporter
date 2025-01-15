@@ -13,25 +13,21 @@ import torch
 import os
 
 # Tải mô hình StarCoder
-checkpoint = "bigcode/starcoder"
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu"
+print(f"Using device: {device}")
 auth_token = os.getenv("MODEL_KEY")
+checkpoint = "bigcode/starcoder"
 
 # Tải tokenizer
 tokenizer = AutoTokenizer.from_pretrained(checkpoint, token=auth_token)
 
 # Tải mô hình
-model = AutoModelForCausalLM.from_pretrained(checkpoint, token=auth_token)
+model = torch.quantization.quantize_dynamic(
+    model=AutoModelForCausalLM.from_pretrained(checkpoint, use_auth_token=auth_token), 
+    qconfig_spec={torch.nn.Linear},  
+    dtype=torch.qint8  
+)
 
-# Áp dụng quantization (nếu chạy trên CPU)
-if device == "cpu":
-    model = torch.quantization.quantize_dynamic(
-        model,  
-        {torch.nn.Linear},  
-        dtype=torch.qint8  
-    )
-else:
-    model.to(device)
 
 
 # Tải mô hình ngôn ngữ spaCy
