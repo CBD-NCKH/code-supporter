@@ -25,14 +25,16 @@ tokenizer = AutoTokenizer.from_pretrained(checkpoint, token=auth_token)
 # Hàm tải mô hình
 def load_model():
     global model
-    print("Loading model with quantization...")
-    model = torch.quantization.quantize_dynamic(
-        model=AutoModelForCausalLM.from_pretrained(checkpoint, use_auth_token=auth_token),
-        qconfig_spec={torch.nn.Linear},
-        dtype=torch.qint8
-    )
-    print("Model loaded successfully.")
+    if model is None:  # Kiểm tra tránh tải lại
+        print("Loading model with quantization...")
+        model = torch.quantization.quantize_dynamic(
+            model=AutoModelForCausalLM.from_pretrained(checkpoint, ttoken=auth_token),
+            qconfig_spec={torch.nn.Linear},
+            dtype=torch.qint8
+        )
+        print("Model loaded successfully.")
 
+model = None
 # Tải mô hình trong luồng riêng
 threading.Thread(target=load_model).start()
 
@@ -109,7 +111,7 @@ def get_user_conversation(sheet, username, max_rows=4):
 
 # Khởi tạo ứng dụng Flask
 app = Flask(__name__, template_folder='templates')
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
 # Route mặc định để render giao diện
 @app.route('/')
