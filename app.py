@@ -125,7 +125,7 @@ def register():
     data = request.json
     username = data.get("username")
     password = data.get("password")
-    sheet = connect_google_sheet("ChatHistory")
+    sheet = connect_google_sheet("CodesupporterHistory")
     success, message = create_account(sheet, username, password)
     if success:
         return jsonify({"redirect_url": f"/chat?username={username}"}), 201
@@ -139,7 +139,7 @@ def login():
         data = request.json
         username = data.get("username")
         password = data.get("password")
-        sheet = connect_google_sheet("ChatHistory")
+        sheet = connect_google_sheet("CodesupporterHistory")
         if authenticate_user(sheet, username, password):
             return jsonify({"redirect_url": f"/chat?username={username}"}), 200
         else:
@@ -179,5 +179,5 @@ def api():
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 55000))  
+    port = int(os.environ.get("PORT", 5000))  
     app.run(host='0.0.0.0', port=port)
