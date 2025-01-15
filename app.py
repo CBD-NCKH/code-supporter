@@ -28,7 +28,7 @@ def load_model():
     if model is None:  # Kiểm tra tránh tải lại
         print("Loading model with quantization...")
         model = torch.quantization.quantize_dynamic(
-            model=AutoModelForCausalLM.from_pretrained(checkpoint, ttoken=auth_token),
+            model=AutoModelForCausalLM.from_pretrained(checkpoint, token=auth_token),
             qconfig_spec={torch.nn.Linear},
             dtype=torch.qint8
         )
