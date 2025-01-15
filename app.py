@@ -1,4 +1,4 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import sqlite3
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
@@ -17,8 +17,18 @@ checkpoint = "bigcode/starcoder"
 device = "cuda" if torch.cuda.is_available() else "cpu"
 auth_token = os.getenv("MODEL_KEY")
 
+quant_config = BitsAndBytesConfig(
+    load_in_8bit=True,
+    llm_int8_threshold=4.0  # Tùy chỉnh ngưỡng để tăng độ chính xác
+)
+
 tokenizer = AutoTokenizer.from_pretrained(checkpoint, token=auth_token)
-model = AutoModelForCausalLM.from_pretrained(checkpoint, token=auth_token).to(device)
+model = AutoModelForCausalLM.from_pretrained(
+    checkpoint,
+    quantization_config=quant_config,
+    token=auth_token,
+    device_map="auto"
+)
 
 
 # Tải mô hình ngôn ngữ spaCy
