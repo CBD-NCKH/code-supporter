@@ -11,6 +11,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import hashlib
 import torch
 import os
+import threading
 
 # Tải mô hình StarCoder
 device = "cpu"
@@ -21,12 +22,19 @@ checkpoint = "bigcode/starcoder"
 # Tải tokenizer
 tokenizer = AutoTokenizer.from_pretrained(checkpoint, token=auth_token)
 
-# Tải mô hình
-model = torch.quantization.quantize_dynamic(
-    model=AutoModelForCausalLM.from_pretrained(checkpoint, use_auth_token=auth_token), 
-    qconfig_spec={torch.nn.Linear},  
-    dtype=torch.qint8  
-)
+# Hàm tải mô hình
+def load_model():
+    global model
+    print("Loading model with quantization...")
+    model = torch.quantization.quantize_dynamic(
+        model=AutoModelForCausalLM.from_pretrained(checkpoint, use_auth_token=auth_token),
+        qconfig_spec={torch.nn.Linear},
+        dtype=torch.qint8
+    )
+    print("Model loaded successfully.")
+
+# Tải mô hình trong luồng riêng
+threading.Thread(target=load_model).start()
 
 
 
@@ -101,7 +109,7 @@ def get_user_conversation(sheet, username, max_rows=4):
 
 # Khởi tạo ứng dụng Flask
 app = Flask(__name__, template_folder='templates')
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "https://code-supporter.onrender.com"}})
+CORS(app, supports_credentials=True)
 
 # Route mặc định để render giao diện
 @app.route('/')
@@ -147,6 +155,10 @@ def login():
 @app.route('/api', methods=['POST'])
 def api():
     try:
+        # Kiểm tra nếu mô hình chưa tải xong
+        if model is None:
+            return jsonify({"error": "Model is still loading. Please try again later."}), 503
+        
         username = request.args.get('username')
         if not username:
             return jsonify({"error": "Unauthorized. Username is missing."}), 401
