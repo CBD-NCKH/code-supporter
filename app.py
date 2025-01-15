@@ -50,7 +50,7 @@ def connect_google_sheet(sheet_name):
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     sheet = client.open(sheet_name).sheet1
-    return sheetfitfit
+    return sheet
 
 # Hàm hash mật khẩu
 def hash_password(password):
