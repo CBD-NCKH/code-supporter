@@ -23,7 +23,6 @@ if (authContainer) {
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert('Đăng ký thành công!');
                     window.location.href = data.redirect_url; // Điều hướng đến URL mới
                 } else {
                     alert(data.error || 'Đăng ký thất bại.');
@@ -51,7 +50,6 @@ if (authContainer) {
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert('Đăng nhập thành công!');
                     window.location.href = data.redirect_url; // Điều hướng đến URL mới
                 } else {
                     alert(data.error || 'Đăng nhập thất bại.');
